@@ -1,0 +1,92 @@
+Zhiyu Mao (zm255)
+<p id="p1a">
+  <h1>Problem 1</h1>
+a. <br>
+Marks: colorful blocks/areas <br>
+Channels: The color hue of the blocks <br>
+</p>
+
+<p id="p1b">
+b. <br>
+Marks: small circular dots <br>
+Channels: colors of the dots and the horizontal and vertical position of the dots <br>
+</p>
+
+<p id="p2">
+<h1>Problem 2</h1>
+Valid types are b, f, g, i, k and l. <br>
+<script>
+  console.log(typeof("hello"));
+  console.log(typeof({hello: "hello"}));
+  console.log(typeof(3));
+  console.log(typeof(true));
+  var k = null;
+  console.log(typeof(k));
+  console.log(typeof(function() {}));
+
+</script>
+<b>Typeof() function is unable to return null type but object</b>
+</p>
+
+<p id="p5">
+  <h1>Problem 3</h1>
+  <p>
+    <ul>
+      <li>
+        a. should use double quotation marks on both netid and jmr395. <br>
+        Should be {"netid": "jmr395"} <br>
+        <script>
+          let netid = '{"netid": "jmr395"}';
+          console.log(JSON.parse(netid));
+        </script>
+      </li>
+      <li>
+        b. should remove the comment <br>
+        Could be {"number": ["INFO3300/CS3300/INFO5100"]} <br>
+        <script>
+          let course = '{"number": ["INFO3300/CS3300/INFO5100"]}';
+          console.log(JSON.parse(course));
+        </script>
+      </li>
+      <li>
+        c. should change semicolon to comma. <br>
+        [3, 4.3, null] <br>
+        <script>
+          let c = '[3, 4.3, null]';
+          console.log(JSON.parse(c));
+        </script>
+      </li>
+      <li>
+        d. should change the semicolon to colon and close the phrase with square bracket<br>
+        [{ "name": "DDWA", "number": 3300 },{ "name": "Java", "number": 2110 },{ "name":"Python", "number": 1110 }] <br>
+        <script>
+          let d = '[{ "name": "DDWA", "number": 3300 },{ "name": "Java", "number": 2110 },{ "name":"Python", "number": 1110 }]';
+          console.log(JSON.parse(d));
+        </script>
+      </li>
+
+    </ul>
+  </p>
+
+</p>
+
+<p id="p4">
+  <h1>Problem 4</h1>
+  <pre>
+  define the list as
+  [
+    {"first": 1,"second": true, "third": ["string1", "string2"]},
+    {"first": 2,"second": true, "third": ["string1", "string2"]},
+    {"first": 3,"second": true, "third": ["string1", "string2"]}
+  ]
+</pre>
+  <script>
+    let list = '[{"first": 1,"second": true, "third": ["string1", "string2"]}, {"first": 2,"second": true, "third": ["string1", "string2"]}, {"first": 3,"second": true, "third": ["string1", "string2"]}]';
+    console.log(JSON.parse(list));
+  </script>
+</p>
+
+<p id="p5">
+  <h1>Problem 5</h1>
+  Zero grade will be given if the submission is late and unreadable. Two lowest scores will be discarded.
+</p>

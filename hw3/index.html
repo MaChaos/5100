@@ -1,0 +1,262 @@
+<head>
+    <meta charset="utf-8"/>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+<body>
+    <h2>HW3 - Zhiyu Mao(zm255)</h2>
+    <h3>Problem 1</h3>
+    <ul id="p1">
+        
+        <li id="p1a">
+            This is a sequential scale. I think this would be an effective
+            color scale as one side is much darker than the other side.
+        </li>
+        <li id="p1b">
+            No, it is not effective for this task. It is 
+            hard to differentiate the color between blue and yellow and blue 
+            and red. All looks grey and loomy.
+        </li>
+        <li id="p1c">
+            Would be difficult for Protanopia, Protanomaly, Deuteranopia, 
+            Deuteranomaly, Tritanopia, Achromatopsia and Achromatomaly. For 
+            Deuteranomaly the result does not vary too much.
+        </li>
+        <li id="p1d">
+            Would NOT recommend this. The luminance for rainbow scale actually 
+            differs a lot and not in sequential. Also, there would be an abrupt 
+            hue change from green to yellow, which will divide the map.
+        </li>
+    </ul>
+
+    <p id="p2">
+        <h3>Problem 2</h3>
+        <svg id="ptwo" width="300" height="200"></svg>
+        <script>
+            // var data = 
+            points = [[10, 9.14], [8, 8.14], [13, 8.74], [9, 8.77], [11, 9.26], [14, 8.1], [6, 6.13], [4, 3.1], [12, 9.13], [7, 7.26], [5, 4.74]];
+            let svg = d3.select("svg#ptwo");
+            let xScale = d3.scaleLinear().domain([0,15]).range([20,290]);
+            let yScale = d3.scaleLinear().domain([0,10]).range([5,185]);
+            console.log(xScale(1));
+            
+            // x axis
+            for (var i = 0; i < 16; i++) {
+                svg.append("line")
+                    .attr("x1", xScale(i))
+                    .attr("x2", xScale(i))
+                    // .attr("x2", xScale)
+                    .attr("y1", 185)
+                    .attr("y2", 5)
+                    .style("stroke", "#9F9F9F")
+                    .style("stroke-width", 1);
+
+                if ((i%5)== 0) {
+                    svg.append("text")
+                    .text(i)
+                    .style("color", "black")
+                    .style("font-size", "10px")
+                    .attr("text-anchor", "middle")
+                    .attr("x", xScale(i))
+                    .attr("y", 195);
+                }
+            }
+            // y axis
+            for (var i = 0; i < 11; i++) {
+                svg.append("line")
+                    .attr("x1", 20)
+                    .attr("x2", 290)
+                    .attr("y1", yScale(i))
+                    .attr("y2", yScale(i))
+                    .style("stroke", "#9F9F9F")
+                    .style("stroke-width", 1);
+
+                if ((i%5)== 0) {
+                    svg.append("text")
+                    .text(i)
+                    .style("color", "black")
+                    .style("font-size", "10px")
+                    .attr("text-anchor", "middle")
+                    .attr("x", 13)
+                    .attr("y", 195-yScale(i));
+                }
+            }
+
+            points.forEach(function(d,i){
+                svg.append("circle")
+                    .attr("r", 3.5)
+                    .attr("cx", xScale(d[0]))
+                    .attr("cy", 190 - yScale(d[1]))
+                    .style("fill", "#2d68c6")
+                    .on("click", function() {
+                        // d3.select(this).style("color", "red");
+                        let circle = d3.select(this);
+                        circle.style("fill", "red");
+                        // console.log("mouseovered");
+                        
+
+                    })
+            })
+
+
+
+        </script>
+    </p>
+    <p id="p3">
+        <h3>Problem 3</h3>
+        <p>E: Because there are still two categories that are important for 
+            determining the price of a diamond, which are cut and clarity. <br>
+            In this plot, we haven't considered these two important factors.
+        </p>
+        <svg id="svgOne" height="400" width="400"></svg>
+        <svg id="svgTwo" height="400" width="400" style="padding-top: 50px"></svg>
+        <svg id="svgThree" height="400" width="400" style="padding-top: 50px"></svg>
+        
+        <!-- Price domain 357 ~ 18803 -->
+        <!-- Carat domain 0.23 ~ 2.99 -->
+        
+        <script>
+            let layer = d3.select("g#diamond");
+            var diamondData;
+            d3.json("./diamonds.json").then( function(data) {
+                // console.log(data.length);
+                console.log(data);
+                diamondData = data;
+                // console.log(diamondData);
+                // console.log(diamondData + "hello");
+                
+                // first graph
+                let caratScale = d3.scaleLinear().domain([0,3]).range([0, 395]);
+                let priceScale = d3.scaleLinear().domain([0, 20000]).range([5, 400]);
+                let svgOne = d3.select("svg#svgOne");
+                for (let i = 0; i < 4; i++) {
+                    svgOne.append("line")
+                        .attr("x1", caratScale(i))
+                        .attr("x2", caratScale(i))
+                        .attr("y1", 400)
+                        .attr("y2", 5)
+                        .style("stroke", "#9F9F9F")
+                        .style("stroke-width", 1);
+                }
+                for (let i = 0; i < 21; i++) {
+                    svgOne.append("line")
+                        .attr("x1", 0)
+                        .attr("x2", 395)
+                        .attr("y1", priceScale(i*1000))
+                        .attr("y2", priceScale(i*1000))
+                        .style("stroke", "#9F9F9F")
+                        .style("stroke-width", 1);
+                }
+                // console.log(diamondData[0]);
+                
+                diamondData.forEach(function(d,i) {
+                    svgOne.append("circle")
+                        .attr("r", 3)
+                        .attr("cx", Math.floor(caratScale(d['carat'])))
+                        .attr("cy", Math.floor( 405 - priceScale(d['price'])))
+                        .style("fill", "#2d68c6")
+                        .style("opacity", 0.4);
+                });
+
+                // second graph color_quality v.s. price
+                let svgTwo = d3.select("svg#svgTwo");
+                priceScale = d3.scaleLinear().domain([0, 20000]).range([0, 400]);
+                let qualityScale = d3.scaleLinear().domain([0,8]).range([0,400]);
+                for (let i = 0; i < 9; i++) {
+                    svgTwo.append("line")
+                        .attr("x1", qualityScale(i))
+                        .attr("x2", qualityScale(i))
+                        .attr("y1", 400)
+                        .attr("y2", 0)
+                        .style("stroke", "#9F9F9F")
+                        .style("stroke-width", 1);
+                }
+                for (let i = 0; i < 21; i++) {
+                    svgTwo.append("line")
+                        .attr("x1", 0)
+                        .attr("x2", 400)
+                        .attr("y1", priceScale(i*1000))
+                        .attr("y2", priceScale(i*1000))
+                        .style("stroke", "#9F9F9F")
+                        .style("stroke-width", 1);
+                }
+                // console.log(diamondData[0]);
+                
+                diamondData.forEach(function(d,i) {
+                    svgTwo.append("circle")
+                        .attr("r", 3)
+                        .attr("cx", Math.floor(Math.random()*10-5+qualityScale(d['color_rating'])))
+                        .attr("cy", Math.floor(Math.random()*10-5+ 400 - priceScale(d['price'])))
+                        .style("fill", "#0b8457")
+                        .style("opacity", 0.3);
+                });
+
+                // third graph
+                let svgThree = d3.select("svg#svgThree");
+                // priceScale = d3.scaleLinear().domain([0, 20000]).range([0, 400]);
+                let pricePerCaratScale = d3.scaleLinear().domain([0,17000]).range([0,400]);
+                for (let i = 0; i < 9; i++) {
+                    svgThree.append("line")
+                        .attr("x1", qualityScale(i))
+                        .attr("x2", qualityScale(i))
+                        .attr("y1", 400)
+                        .attr("y2", 0)
+                        .style("stroke", "#9F9F9F")
+                        .style("stroke-width", 1);
+                }
+                for (let i = 0; i < 18; i++) {
+                    svgThree.append("line")
+                        .attr("x1", 0)
+                        .attr("x2", 400)
+                        .attr("y1", pricePerCaratScale(i*1000))
+                        .attr("y2", pricePerCaratScale(i*1000))
+                        .style("stroke", "#9F9F9F")
+                        .style("stroke-width", 1);
+                }
+                // console.log(diamondData[0]);
+                
+                diamondData.forEach(function(d,i) {
+                    // if (d['cut'] == "Ideal" ) {
+                        svgThree.append("circle")
+                        .attr("r", 3)
+                        .attr("cx", Math.floor(Math.random()*10-5+qualityScale(d['color_rating'])))
+                        .attr("cy", Math.floor(Math.random()*10-5+ 400 - pricePerCaratScale(d['price']/d['carat'])))
+                        .style("fill", "#cf3030")
+                        .style("opacity", 0.3);
+                    // }
+                    // svgThree.append("circle")
+                    //     .attr("r", 3)
+                    //     .attr("cx", Math.floor(Math.random()*10-5+qualityScale(d['color_rating'])))
+                    //     .attr("cy", Math.floor(Math.random()*10-5+ 405 - pricePerCaratScale(d['price']/d['carat'])))
+                    //     .style("fill", "#cf3030")
+                    //     .style("opacity", 0.3);
+                    let min = 100000;
+                    let max = -1;
+                    for (let i = 0; i < diamondData.length; i++) {
+                        if (diamondData[i].price/diamondData[i].carat < min) {
+                            min = diamondData[i].price/diamondData[i].carat;
+                        }
+                        if (diamondData[i].price/diamondData[i].carat > max) {
+                            max = diamondData[i].price/diamondData[i].carat;
+                        }
+                    }
+                    console.log("min: " + min + " max: " + max);
+                });
+            }).catch( e => { console.log("Error detected:" + e.message);});
+            
+            // function to get min and max in order to evaluate domain and scale
+                // let min = 100000;
+                // let max = -1;
+                // for (let i = 0; i < diamondData.length; i++) {
+                //     if (diamondData[i].price/diamondData[i].carat < min) {
+                //         min = diamondData[i].price/diamondData[i].carat;
+                //     }
+                //     if (diamondData[i].price/diamondData[i].carat > max) {
+                //         max = diamondData[i].price/diamondData[i].carat;
+                //     }
+                // }
+                // console.log("min: " + min + " max: " + max);
+            
+            // 
+        </script>
+    </p>
+</body>
