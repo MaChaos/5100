@@ -222,20 +222,33 @@
                     .style("fill", "none")
                     .attr("stroke-width", 5)
                     .attr("opacity", 0.25)
+                    // opacity with 0.75 looks so much better
                 var landingPoint = array[array.length-1];
                 var txt;
                 var distance = ((landingPoint.x - 75)/5).toFixed(1);
                 var totalTime = (distance/landingPoint.xVelocity).toFixed(1);
-                if (landingPoint.ground == 20) {
+                if (landingPoint.ground == 20 || landingPoint.x >= 250) {
                     txt = "Missed, ";
                 }
                 else if (landingPoint.ground == 0) {
                     txt = "HIT, ";
                 }
                 svg.append("text")
-                    .attr("x", landingPoint.x + 10)
+                    .attr("x", landingPoint.x + 5)
+                    .attr("y", 325)
+                    .text(txt)
+                    .style("font-size", 10)
+                    .style("font-family", "Arial")
+                svg.append("text")
+                    .attr("x", landingPoint.x + 5)
+                    .attr("y", 335)
+                    .text(totalTime + "s,")
+                    .style("font-size", 10)
+                    .style("font-family", "Arial")
+                svg.append("text")
+                    .attr("x", landingPoint.x + 5)
                     .attr("y", 345)
-                    .text(txt + totalTime + "s," + distance + "m")
+                    .text(distance + "m")
                     .style("font-size", 10)
                     .style("font-family", "Arial")
                     // .attr("text-anchor", "middle")
@@ -246,11 +259,55 @@
             //     if 
             // }
             plotTrajectory(trajectory(14,75), "#ff8b00");
-            // plotTrajectory(trajectory(19,79.6), "#30e3ca");
-            // plotTrajectory(trajectory(20,77), "#0c005a");
+            plotTrajectory(trajectory(19,80), "#30e3ca");
+            plotTrajectory(trajectory(20,77), "#0c005a");
+            plotTrajectory(trajectoryWithWind(13,80,1), "#DF302E");
             // plotTrajectory(trajectory(13,69), "#0c005a");
-            console.log(trajectory(13, 69));
+            console.log(trajectory(20, 77));
+            function trajectoryWithWind(initialVelocity, angle, windAcceleraton) {
+                var vxi = initialVelocity*Math.cos(angle/180*Math.PI);
+                var vyi = initialVelocity*Math.sin(angle/180*Math.PI);
+                var tmax = 2*vyi/g.toFixed(1);
+                var tTouch;
+                var tOver;
+                var tOver_height;
+                var ground;
 
+                console.log(vxi);
+                console.log(vyi);
+                
+                console.log(tmax);
+                
+                var array = [];
+
+                for (var t = 0; t < tmax; t = t + 0.1) {
+                    tTouch = 13/(vxi+windAcceleraton*t).toFixed(1);
+                    tOver = 17/(vxi+windAcceleraton*t).toFixed(1);
+                    tOver_height = vyi*tOver - 0.5*g*tOver*tOver;
+                    if (t < tTouch) {
+                        ground = 0;
+                    }
+                    else if (t <= tOver && t >= tTouch) {
+                        ground = 20;
+                    }
+                    else if (t > tOver && tOver_height < 20){
+                        ground = 20;
+                    }
+                    else if (t > tOver && tOver_height >20) {
+                        ground = 0;
+                    }
+                    array.push({
+                            "ground": ground,
+                            "x": xScale(vxi*t + 0.5*windAcceleraton*t*t),
+                            "y": yScale(vyi*t - 0.5*g*t*t),
+                            "xVelocity": vxi+windAcceleraton*t,
+                            "yVelocity": vyi - g*t,
+                            "xAcceleration": windAcceleraton,
+                            "yAcceleration": g
+                        });
+                }
+                return array;
+            }
         </script>
     </p>
 </body>
