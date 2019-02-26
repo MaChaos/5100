@@ -1,0 +1,186 @@
+<script>
+    // Let's make a plain old scatterplot -- we are going to re-visit a few things from Friday
+
+
+    // 0. Find our SVG and get that ready
+    //     We're going to use a new way of padding that makes axes easier
+    let svg = d3.select("svg#scatterplot");
+    let width = svg.attr("width");
+    let height = svg.attr("height");
+    // This is a clever way to do padding that is more adjustable when you are designing
+    let margin = { top: 10, right: 10, bottom: 50, left: 50};
+    let chartWidth = width - margin.left - margin.right; // If you know the key is fixed text, you can access it with . instead of [""]
+    let chartHeight = height - margin.top - margin.bottom;
+
+    var dataset = []
+    // 1. Import some CSV data
+    d3.csv("../datasets/gapminder.csv").then( function(data) {
+
+      // Useful fields:  "Life Expectancy"  "GDP/Person (PPP$)"   "Total Population"
+
+      // 2. Check for data issues
+
+      // What we find here are that most of the attributes are imported as strings rather than numbers. Let's cast them.
+      data.forEach( (d, i) => {
+        d['life'] =  Number(d["Life Expectancy"])  ;
+        d['gdp'] =  Number(d["GDP/Person (PPP$)"])   ;
+        d['pop'] =  Number(d["Total Population"].replace(/,/g,""))   ;
+      });
+
+      // We noticed that the chart seemed very crunched at the top
+      //  Looking at the data, we found points with 0 values in gdp and life
+      //  (This is probably because they were NA or blank and the Number() cast them to 0
+      data = data.filter( d => d['gdp'] != 0 && d['life'] != 0 );
+
+      console.log(data);
+
+      // 3. Let's build some scales
+      const gdpMin = d3.min(data, d => d['gdp']);
+      const gdpMax = d3.max(data, d => d['gdp']);
+      const gdpScale = d3.scaleLog()
+              .domain([gdpMin+1, gdpMax+1])
+              .range([0, chartWidth]); // x axis
+
+      const lifeMin = d3.min(data, d => d['life']);
+      const lifeMax = d3.max(data, d => d['life']);
+      const lifeScale = d3.scaleLinear()
+              .domain([lifeMin, lifeMax])
+              .range([chartHeight, 0]); // y axis -- we reversed this to make the y axis work
+
+      const popMin = d3.min(data, d => d['pop']);
+      const popMax = d3.max(data, d => d['pop']);
+      const popScale = d3.scaleLog()
+              .domain([popMin+1, popMax+1])
+              .range([5,15]); // circle size
+
+      const regionScale = d3.scaleOrdinal(d3.schemeCategory10); // don't need to define domain
+
+
+      // 4. Make some axes before we plot the circles
+      //     Let's also style them this time
+      // Y axis
+      let leftAxis = d3.axisLeft(lifeScale); // ticks looked fine here
+      svg.append("g").attr("class", "y axis") // Not d3-required. Just helpful for styling
+        .attr("transform","translate("+ (margin.left-10) +","+ margin.top +")")
+        .call(leftAxis);
+
+      // X axis
+      let bottomAxis = d3.axisBottom(gdpScale).ticks(8, d3.format("$.01s")); // Making simpler ticks without the e
+      // Check out http://bl.ocks.org/zanarmstrong/05c1e95bf7aa16c4768e
+      let element = svg.append("g").attr("class", "x axis")
+        .attr("transform","translate("+ margin.left +","+ (margin.top + chartHeight + 10) +")");
+      bottomAxis(element); // Same as .call
+
+      // If you want the axes to "touch" at 0,0, then remove the +- 10 from the translation
+      //  but this risks occluding points
+
+      // 5. Let's use axes to make some gridlines too!
+      // Y axis
+      let leftGridlines = d3.axisLeft(lifeScale).tickSize(-chartWidth-10).tickFormat("");
+      svg.append("g").attr("class", "y gridlines") // See CSS at top of file
+        .attr("transform","translate("+ (margin.left-10) +","+ margin.top +")")
+        .call(leftGridlines);
+
+      // X axis
+      let bottomGridlines = d3.axisBottom(gdpScale).tickSize(-chartHeight-10).tickFormat("");
+            // Why is tickSize negative?
+      element = svg.append("g").attr("class", "x gridlines")
+        .attr("transform","translate("+ margin.left +","+ (margin.top + chartHeight + 10) +")");
+      bottomGridlines(element);
+
+
+      // If you want the axes to "touch" at 0,0, then remove the +- 10 from the translation
+      //  but this risks occluding points
+
+      // 5. Start plotting circles and see what happens
+
+
+      let scatter = svg.append("g") // We make a subgroup to contain the points we are adding, and use the margins to shrink it and move it to the right place, so that it doesn't overlap our axes
+            .attr("transform","translate("+margin.left+","+margin.top+")");
+
+      data.forEach( (d, i) => {
+
+        let gdp = gdpScale(d['gdp']+1);
+        let life = lifeScale(d['life']);
+        let pop = popScale(d['pop']+1);
+        let region = regionScale(d['Region']);
+
+        // Draw
+        let circle = scatter.append("circle")
+              .attr("cx", gdp)
+              .attr("cy", life)
+              .attr("r", pop)
+              .attr("opacity", 0.8)
+              .style("fill", region)
+              .attr("region", d["Region"])
+              .attr("nation", d["nation"]);
+
+
+          // --- End of class on Feb 18 ---
+
+
+          // Let's add some mouseovers!
+          circle.on("mouseover", function() {
+            console.log(d3.select(this));
+            d3.select(this)
+              .transition().duration(200)
+              .attr("r",pop*2)
+              .style("stroke","#000");
+
+            // Add a label
+            scatter.append("text")
+              // IDs have strict requirements on allowable characters ( https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/id )
+              .attr("id", d['nation'].replace(/[ _\-,.:'#!\?]/g,""))  // We need to be able to find this to remove it later, so lets store an ID
+              .attr("x", gdp )
+              .attr("y", life - 15 )
+              .text(d['nation']);
+          });
+
+          circle.on("mouseout", function() {
+            d3.select(this)
+              .transition().duration(200)
+              .attr("r",pop)
+              .style("stroke","none");
+            // Grab label by element ID
+            d3.select("#" + d['nation'].replace(/[ _\-,.:'#!\?]/g,"")).remove();
+          });
+
+
+        });
+
+
+      // See that it looks VERY weird --
+      // diagnostics -- console.log(gdpScale(d['gdp']),d);
+      // added:  data = data.filter( d => d['gdp'] != 0 );
+
+      // Still looks weird -- squished to corner -- signal you need log scale, which we added
+
+
+      // 6. Let's borrow our old legend code
+      regionScale.domain().forEach(function(d,i) {
+        d3.select("#simpleLegend")
+          .append("span").text(d)
+          .style("color", regionScale(d))
+          .on("mouseover", function() {
+            scatter.selectAll("circle").each(function() {
+              let circle = d3.select(this);
+              if (circle.attr("region") === d) {
+                circle.attr("opacity", 0.8);
+              }
+              else {
+                circle.attr("opacity", 0.1);
+              }
+            })
+          })
+      });
+
+      // 7. Let's also now add a way to get all circles back after using the legend -- just a simple selectAll
+        d3.select("#simpleLegend").on("mouseout", function() {
+            scatter.selectAll("circle").attr("opacity", 0.8);
+            // Notice that .attr works on selectAll as well!
+        });
+
+    });
+
+
+</script>

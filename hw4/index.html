@@ -1,0 +1,256 @@
+<head>
+    <meta charset="UTF-8">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+<body>
+    <h3>Problem 1</h3>
+    <p id="p1">
+        <pre>
+            <b>A.</b>
+            The data has many N/A, NA, "" and 0, so I used the filter function
+            to filter out all of those data. Also the year should be <=2018 and
+            >= 1975.
+            Because the worldwide_gross has both $ and , in the string, we need
+            to use replace() to translate the number into a different entry like
+            'gross'.
+        </pre>
+        <svg id="movie" height="500" width="800"></svg>
+        <script>
+
+            let svgMovie = d3.select("svg#movie");
+            let width = svgMovie.attr("width");
+            let height = svgMovie.attr("height");
+            let margin = {top: 20, right: 20, bottom: 40, left: 40};
+            let chartWidth = width - margin.left - margin.right;
+            let chartHeight = height - margin.top - margin.bottom;
+
+            var blockbustersData;
+
+            d3.json("./blockbusters.json").then(function(data) {
+                console.log(data.length);
+                // console.log(data[0]);
+                
+                var count = 0;
+                // console.log(data[0].worldwide_gross);
+                
+                data.forEach((d, i) => {
+                    // replace all $ and , in the string
+                    d['gross'] = Number(d['worldwide_gross'].replace(/\$|,/g,""));
+                });
+                data = data.filter(
+                    d => d['Main_Genre'] != 0 && 
+                    d['imdb_rating'] != 0 && 
+                    d['length'] != 0 && 
+                    d['rank_in_year'] != 0 &&
+                    d['rating'] != 0 &&
+                    d['studio'] != 0 &&
+                    d['worldwide_gross'] != 0 &&
+                    d['year'] != 0 &&
+                    d['year'] <= 2018 &&
+                    d['year'] >= 1975
+
+                );
+                blockbustersData = data;
+                
+                // calculate min and max then scale
+                const grossMin = d3.min(data, d => d['gross']);
+                const grossMax = d3.max(data, d => d['gross']);
+                const grossScale = d3.scaleLog()
+                            .domain([grossMin, grossMax])
+                            .range([chartHeight, 0]);
+
+                const yearMin = d3.min(data, d => d['year']);
+                const yearMax = d3.max(data, d => d['year']);
+                const yearScale = d3.scaleLinear()
+                            .domain([yearMin, yearMax])
+                            .range([0, chartWidth]);
+
+                const imdbMin = d3.min(data, d => d['imdb_rating']);
+                const imdbMax = d3.max(data, d => d['imdb_rating']);
+                const imdbScale = d3.scaleLinear()
+                            .domain([imdbMin, imdbMax])
+                            .range([0.5, 10]);
+                const genreScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+                let leftAxis = d3.axisLeft(grossScale).ticks(10, "~g").tickSize(0);
+                svgMovie.append("g").attr("class", "y axis")
+                    .attr("transform","translate("+ (margin.left) +","+ margin.top +")")
+                    .call(leftAxis);
+                let bottomAxis = d3.axisBottom(yearScale).ticks(20, "~g");
+                svgMovie.append("g").attr("class", "x axis")
+                    .attr("transform","translate("+ margin.left +","+ (margin.top + chartHeight) +")")
+                    .call(bottomAxis);
+                // console.log(grossMin);
+                // console.log(grossMax);
+                
+                let leftGridlines = d3.axisLeft(grossScale).tickSize(-chartWidth).tickFormat("");
+                svgMovie.append("g").attr("class", "y gridlines")
+                    .style("color", "#C8C8C8")
+                    .attr("transform","translate("+ (margin.left) +","+ margin.top +")")
+                    .call(leftGridlines);
+                
+                let bottomGridlines = d3.axisBottom(yearScale).tickSize(chartHeight).ticks(20).tickFormat("");
+                svgMovie.append("g").attr("class", "x gridlines")
+                    .style("color", "#C8C8C8")
+                    .attr("transform", "translate(" + (margin.left) +"," + (margin.top)+")")
+                    .call(bottomGridlines);
+
+                let scatter = svgMovie.append("g")
+                    .attr("transform","translate("+margin.left+","+margin.top+")");
+                blockbustersData.forEach((d,i) => {
+                    let movieCircle = scatter.append("circle")
+                        .attr("cx", yearScale(d['year']))
+                        .attr("cy", grossScale(d['gross']))
+                        .attr("r", imdbScale(d['imdb_rating']))
+                        .style("fill", genreScale(d['Main_Genre']))
+                        .style("opacity", 0.4);
+                    
+                    movieCircle.on("mouseover", function() {
+                        // console.log(d3.select(this));
+                        d3.select(this)
+                            .transition().duration(200)
+                            .attr("r", imdbScale(d['imdb_rating'])*2);
+                        
+                        // add a label
+                        //TODO: 2012 still stay on the graph
+                        scatter.append("text")
+                            .attr("id", d['title'].replace(/[ _\-,.:'"#!\?]/g,""))
+                            .attr("x", yearScale(d['year']))
+                            .attr("y", grossScale(d['gross'])-10)
+                            .text(d["title"])
+                            .attr("text-anchor", "middle")
+                            .attr("font-size", 15)
+                            .attr("font-family", "Arial");
+                        
+                    });
+
+                    movieCircle.on("mouseout", function() {
+                        d3.select(this)
+                            .transition().duration(200)
+                            .attr("r", imdbScale(d['imdb_rating']));
+
+                        d3.select("#"+d['title'].replace(/[ _\-,.:'"#!\?]/g,"")).remove();
+                    })
+                });
+
+
+                // blockbustersData = data.filter()
+        }).catch( e => { console.log("Error detected:" + e.message);});  
+        </script>
+    </p>
+    <p id="p2">
+        <h3>Problem 2</h3>
+        <svg id="ball" height="400" width="400">
+            <g id="background" style="stroke: #000; stroke-width: 2px; fill: none;">
+            <!--- Wall is 13 meters from pitcher. 20 meters tall and 4 meters thick. Target is between 8 meters and 18 meters from the wall. --->
+            <path d="M75 350 H 140 V 250 H 160 V 350 H 350"/>
+            <!--- 1 meter is 5px, so our pitcher is at (15,10) from the lower left corner ---> <circle id="pitcher" cx="75" cy="350" r="5" style="fill: #EEF"/>
+            <!-- Our target is between (40,10) and (50,10) from the lower left --->
+            <rect id="target" x="200" y="350" width="50" height="10" style="fill: #FDD"/>
+            </g>
+        </svg>
+        <script>
+            const g = 3.71;
+            const height_wall = 20;
+            const width_wall = 4;
+            const dist_wall = 13;
+            // create scale for 5 pixels/m
+            // for x-axis, domain 0,35, range 75, 350.
+            let svg = d3.select("svg#ball");
+            const xScale = d3.scaleLinear().domain([0,55]).range([75,350]);
+            // reverse the range for yScale
+            const yScale = d3.scaleLinear().domain([0, 70]).range([350,0]);
+            function trajectory(initialVelocity, angle) {
+                var vxi = initialVelocity*Math.cos(angle/180*Math.PI);
+                
+                var vyi = initialVelocity*Math.sin(angle/180*Math.PI);
+                var tmax = 2*vyi/g.toFixed(1);
+                var tTouch = 13/vxi.toFixed(1);
+                var tOver = 17/vxi.toFixed(1);
+                var tOver_height = vyi*tOver - 0.5*g*tOver*tOver;
+                var ground;
+
+                console.log(vxi);
+                console.log(vyi);
+                
+                console.log(tmax);
+                
+                var array = [];
+
+                for (var t = 0; t < tmax; t = t + 0.1) {
+                    if (t < tTouch) {
+                        ground = 0;
+                    }
+                    else if (t <= tOver && t >= tTouch) {
+                        ground = 20;
+                    }
+                    else if (t > tOver && tOver_height < 20){
+                        ground = 20;
+                    }
+                    else if (t > tOver && tOver_height >20) {
+                        ground = 0;
+                    }
+                    array.push({
+                            "ground": ground,
+                            "x": xScale(vxi*t),
+                            "y": yScale(vyi*t - 0.5*g*t*t),
+                            "xVelocity": vxi,
+                            "yVelocity": vyi - g*t,
+                            "xAcceleration": 0,
+                            "yAcceleration": g
+                        });
+                }
+                return array;
+
+            };
+            
+            // var testArray = trajectory(14,75);
+            function plotTrajectory(array, color) {
+                console.log(color);
+                
+                var trajectory = d3.line()
+                    .x(function(d,i) {
+                        return d['x'];
+                    })
+                    .y(function(d,i) {
+                        return d['y'];
+                    })
+                    .curve(d3.curveMonotoneX)
+                svg.append("path")
+                    .attr("d", trajectory(array))
+                    .style("stroke", color)
+                    .style("fill", "none")
+                    .attr("stroke-width", 5)
+                    .attr("opacity", 0.25)
+                var landingPoint = array[array.length-1];
+                var txt;
+                var distance = ((landingPoint.x - 75)/5).toFixed(1);
+                var totalTime = (distance/landingPoint.xVelocity).toFixed(1);
+                if (landingPoint.ground == 20) {
+                    txt = "Missed, ";
+                }
+                else if (landingPoint.ground == 0) {
+                    txt = "HIT, ";
+                }
+                svg.append("text")
+                    .attr("x", landingPoint.x + 10)
+                    .attr("y", 345)
+                    .text(txt + totalTime + "s," + distance + "m")
+                    .style("font-size", 10)
+                    .style("font-family", "Arial")
+                    // .attr("text-anchor", "middle")
+                
+            }
+            // function redGround(array)
+            // function hitOrMissed(array) {
+            //     if 
+            // }
+            plotTrajectory(trajectory(14,75), "#ff8b00");
+            // plotTrajectory(trajectory(19,79.6), "#30e3ca");
+            // plotTrajectory(trajectory(20,77), "#0c005a");
+            // plotTrajectory(trajectory(13,69), "#0c005a");
+            console.log(trajectory(13, 69));
+
+        </script>
+    </p>
+</body>
