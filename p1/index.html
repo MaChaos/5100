@@ -5,7 +5,7 @@
         <title>2018 Spotify Top 100</title>
         <script src="https://d3js.org/d3.v5.min.js"></script>
     </head>
-    <body>
+    <body style="background-color: #2b2726">
         <svg id="radar" width="800" height="800"></svg>
         <script>
             var svg = d3.select("svg#radar");
@@ -14,23 +14,30 @@
                 const height = 800;
                 const xc = width/2;
                 const yc = height/2;
-                const r = 250;
+                const r = 300;
+                const textPadding = 30;
+                const lineScale = d3.scaleOrdinal(d3.schemeSpectral);
+                const axisWidth = 2;
+                const lineColor = "#3c415e";
+                const lableColor = "#3c415e";
+                // const radarScale = d3.scaleSequential(d3.interpolateViridis).domain([0,100]);
                 var category = [
                     "danceability", 
-                    "energy", 
+                    // "energy",
                     // "loudness", 
                     "speechiness",
+                    "energy",
                     "acousticness",
                     // "instrumentalness",
-                    "liveness",
                     "valence",
+                    "liveness",
+                    // "valence",
                     // "tempo"
                 ];
                 console.log(category);
                 const level = category.length;
 
-                var axis = svg
-                    .append("g")
+                var axis = svg.append("g")
                     .selectAll(".axis")
                     .data(category)
                     .enter()
@@ -46,9 +53,25 @@
                         return yc - r*Math.cos(i*2*Math.PI/level);
                     })
                     .attr("class", "line")
-                    .style("stroke", "#070d59")
-                    .style("stroke-width", "5")
-
+                    .style("stroke", lineColor)
+                    .style("stroke-width", axisWidth)
+                    // .attr("opacity", 0.5)
+                axis.append("text")
+                    .attr("x", function(d,i) {
+                        return xc - (r+textPadding)*Math.sin(i*2*Math.PI/level); 
+                    })
+                    .attr("y", function(d,i) {
+                        return yc - (r+textPadding)*Math.cos(i*2*Math.PI/level); 
+                    })
+                    .attr("text-anchor", "middle")
+                    .text(function(d,i){
+                        return category[i];
+                    })
+                    .attr("font-size", 20)
+                    .attr("class", "label")
+                    // .style("color", "blue")
+                    .attr("font-family", "Courier")
+                    
                     // var test = [];
                     // var inner = [];
                     // inner.push({
@@ -79,47 +102,24 @@
                     
                 });
                 console.log(allPoints);
+                const radarScale = d3.scaleSequential(d3.interpolateViridis).domain([100,0]);
                 for(var k = 0; k < allPoints.length; k++) {
-                    var trajectory = d3.line()
-                        .x(function(d,i) {
-                            return d['x'];
-                        })
-                        .y(function(d,i) {
-                            return d['y'];
-                        })
-                        // .curve(d3.curveMonotoneX)
-                    svg.append("path")
-                        .attr("d", trajectory(allPoints[k]))
-                        .style("stroke", color)
-                        .style("fill", "none")
-                        .attr("stroke-width", 5)
-                        .attr("opacity", 0.25)
-        //             svg.selectAll("polygon")
-        //                 .data(allPoints[k])
-        //                 .enter()
-        //                 .append("polygon")
-        //                 .attr("points",function(d) { 
-        //   return allPoints[k].map(function(d) { return [d.x,d.y].join(","); }).join(" ");})
-        //                 .attr("stroke", d3.scaleOrdinal(d3.schemeCategory10))
-        //                 .attr("fill", "none")
-                }
-                // svg.selectAll("polygon")
-                //     .data(allPoints)
-                //     .enter()
-                //     .append("polygon")
-                //     .attr("points", allPoints[0])
-                //     .attr("stroke", "black")
-                //     .style("fill", "none")
-                // svg.selectAll("polygon")
-                //     .data(allPoints[1])
-                //     .enter()
-                //     .append("polygon")
-                //     .attr("points", allPoints[1])
-                //     .attr("stroke", "black")
-                //     .style("fill", "none")
-                // console.log(allPoints[0]);
-                
                     
+                    svg.selectAll(".area")
+                        .data(allPoints[k])
+                        .enter()
+                        .append("polygon")
+                        .attr("points",function(d) { 
+                            return allPoints[k].map(function(d) { 
+                                return [d.x,d.y].join(","); 
+                                }).join(" ");
+                        })
+                        .attr("stroke", radarScale(k))
+                        .attr("fill", radarScale(k))
+                        .style("opacity", "0.05")
+                }
+                console.log(radarScale(500));
+
             }).catch( e => { console.log("Error detected:" + e.message);});
             var f = d3.format("0.2s");
             document.write(
@@ -127,4 +127,10 @@
             );
         </script>
     </body>
+    <style>
+        .label {
+            font-size: 20px;
+            color: #F8F8F8;
+        }
+    </style>
 </html>

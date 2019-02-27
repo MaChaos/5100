@@ -142,7 +142,7 @@
                         // add a label
                         //TODO: 2012 still stay on the graph
                         scatter.append("text")
-                            .attr("id", d['title'].replace(/[ _\-,.:'"#!\?]/g,""))
+                            .attr("id", d['title'].replace(/[ _\-,.:'"#&!\?]/g,""))
                             .attr("x", yearScale(d['year']))
                             .attr("y", grossScale(d['gross'])-10)
                             .text(d["title"])
@@ -157,7 +157,7 @@
                             .transition().duration(200)
                             .attr("r", imdbScale(d['imdb_rating']));
 
-                        d3.select("#"+d['title'].replace(/[ _\-,.:'"#!\?]/g,"")).remove();
+                        d3.select("#"+d['title'].replace(/[ _\-,.:'"#&!\?]/g,"")).remove();
                     })
                 });
 
@@ -205,6 +205,7 @@
                         ground = 0;
                     }
                     else if (t <= tOver && t >= tTouch) {
+                        
                         ground = 20;
                     }
                     else if (t > tOver && tOver_height < 20){
@@ -223,6 +224,8 @@
                             "yAcceleration": g
                         });
                 }
+                console.log(array);
+                
                 return array;
 
             };
@@ -233,12 +236,24 @@
                 
                 var trajectory = d3.line()
                     .x(function(d,i) {
-                        return d['x'];
+                        // y > ground
+                        if (d['ground'] <= (350-d['y'])/5 ) 
+                            // console.log(d);
+                            
+                            return d['x'];
+                        
+                        // return d['x'];
                     })
                     .y(function(d,i) {
-                        return d['y'];
+                        if (d['ground'] <= (350-d['y'])/5 ) 
+                            return d['y'];
+                        
+                        // return d['y'];
                     })
                     .curve(d3.curveMonotoneX)
+                console.log(trajectory(array));
+                console.log(array);
+                
                 svg.append("path")
                     .attr("d", trajectory(array))
                     .style("stroke", color)
@@ -284,15 +299,21 @@
             plotTrajectory(trajectory(14,75), "#ff8b00");
             plotTrajectory(trajectory(19,80), "#30e3ca");
             plotTrajectory(trajectory(20,77), "#0c005a");
+
+            // plotTrajectory(trajectory(15,60), "#0c005a");
+            // plotTrajectory(trajectory(13,72), "#0c005a");
+
             plotTrajectory(trajectoryWithWind(13,80,1), "#DF302E");
             // plotTrajectory(trajectory(13,69), "#0c005a");
-            console.log(trajectory(20, 77));
+            console.log(trajectoryWithWind(13,80,1));
+            
             function trajectoryWithWind(initialVelocity, angle, windAcceleraton) {
                 var vxi = initialVelocity*Math.cos(angle/180*Math.PI);
                 var vyi = initialVelocity*Math.sin(angle/180*Math.PI);
                 var tmax = 2*vyi/g.toFixed(1);
-                var tTouch;
-                var tOver;
+                var tTouch = calcTimeWithWind(13, vxi, windAcceleraton);
+                var tOver = calcTimeWithWind(17, vxi, windAcceleraton);
+                
                 var tOver_height;
                 var ground;
 
@@ -304,9 +325,13 @@
                 var array = [];
 
                 for (var t = 0; t < tmax; t = t + 0.1) {
-                    tTouch = 13/(vxi+windAcceleraton*t).toFixed(1);
-                    tOver = 17/(vxi+windAcceleraton*t).toFixed(1);
+                    
+                    // tTouch = 13/(vxi+windAcceleraton*t).toFixed(1);
+                    // tOver = 17/(vxi+windAcceleraton*t).toFixed(1);
+
                     tOver_height = vyi*tOver - 0.5*g*tOver*tOver;
+                    console.log(tOver_height);
+                    
                     if (t < tTouch) {
                         ground = 0;
                     }
@@ -330,6 +355,16 @@
                         });
                 }
                 return array;
+            }
+
+            function calcTimeWithWind(distance, velocity, acceleration) {
+                var a = acceleration/2;
+                var b = velocity;
+                var c = -distance;
+                // console.log(((-b+Math.sqrt(b*b-4*a*c))/(2*a)));
+        
+                return ((-b+Math.sqrt(b*b-4*a*c))/(2*a));
+
             }
         </script>
     </p>
