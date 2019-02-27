@@ -57,7 +57,7 @@
                     d => d['Main_Genre'] != 0 && 
                     d['imdb_rating'] != 0 && 
                     d['length'] != 0 && 
-                    d['rank_in_year'] != 0 &&
+                    d['rank_in_year'] > 0 &&
                     d['rating'] != 0 &&
                     d['studio'] != 0 &&
                     d['worldwide_gross'] != 0 &&
@@ -87,7 +87,7 @@
                 const imdbMax = d3.max(data, d => d['imdb_rating']);
                 const imdbScale = d3.scaleLinear()
                             .domain([imdbMin, imdbMax])
-                            .range([0.5, 10]);
+                            .range([1, 10]);
                 const genreScale = d3.scaleOrdinal(d3.schemeCategory10);
 
                 let leftAxis = d3.axisLeft(grossScale).ticks(9, d3.format("$.01s")).tickSize(0);
@@ -129,7 +129,7 @@
                         .attr("cy", grossScale(d['gross']))
                         .attr("r", imdbScale(d['imdb_rating']))
                         .style("fill", genreScale(d['Main_Genre']))
-                        .style("opacity", 0.4);
+                        .style("opacity", 0.5);
                     
                     movieCircle.on("mouseover", function() {
                         // console.log(d3.select(this));
@@ -142,7 +142,7 @@
                         // add a label
                         //TODO: 2012 still stay on the graph
                         scatter.append("text")
-                            .attr("id", d['title'].replace(/[ _\-,.:'"#&!\?]/g,""))
+                            .attr("id", "a"+ d['title'].replace(/[ _\-,.:'"#&!\?]/g,""))
                             .attr("x", yearScale(d['year']))
                             .attr("y", grossScale(d['gross'])-10)
                             .text(d["title"])
@@ -157,7 +157,7 @@
                             .transition().duration(200)
                             .attr("r", imdbScale(d['imdb_rating']));
 
-                        d3.select("#"+d['title'].replace(/[ _\-,.:'"#&!\?]/g,"")).remove();
+                        d3.select("#"+"a"+d['title'].replace(/[ _\-,.:'"#&!\?]/g,"")).remove();
                     })
                 });
 
@@ -265,7 +265,7 @@
                 var txt;
                 var distance = ((landingPoint.x - 75)/5).toFixed(1);
                 var totalTime = (distance/landingPoint.xVelocity).toFixed(1);
-                if (landingPoint.ground == 20 || landingPoint.x >= 250) {
+                if (landingPoint.ground == 20 || landingPoint.x >= 250 || landingPoint.x <= 140) {
                     txt = "Missed, ";
                 }
                 else if (landingPoint.ground == 0) {
@@ -299,7 +299,8 @@
             plotTrajectory(trajectory(14,75), "#ff8b00");
             plotTrajectory(trajectory(19,80), "#30e3ca");
             plotTrajectory(trajectory(20,77), "#0c005a");
-
+            // missed before the wall
+            // plotTrajectory(trajectory(10,80), "#0c005a");
             // plotTrajectory(trajectory(15,60), "#0c005a");
             // plotTrajectory(trajectory(13,72), "#0c005a");
 

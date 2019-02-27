@@ -16,10 +16,12 @@
                 const yc = height/2;
                 const r = 300;
                 const textPadding = 30;
-                const lineScale = d3.scaleOrdinal(d3.schemeSpectral);
+                // const lineScale = d3.scaleOrdinal(d3.schemeCategory10).domain([0, category.length]);
                 const axisWidth = 2;
                 const lineColor = "#3c415e";
                 const lableColor = "#3c415e";
+
+
                 // const radarScale = d3.scaleSequential(d3.interpolateViridis).domain([0,100]);
                 var category = [
                     "danceability", 
@@ -36,7 +38,7 @@
                 ];
                 console.log(category);
                 const level = category.length;
-
+                const lineScale = d3.scaleOrdinal(d3.schemeCategory10).domain([0, level])
                 var axis = svg.append("g")
                     .selectAll(".axis")
                     .data(category)
@@ -56,7 +58,8 @@
                     .style("stroke", lineColor)
                     .style("stroke-width", axisWidth)
                     // .attr("opacity", 0.5)
-                axis.append("text")
+                axis.append("g")
+                    .append("text")
                     .attr("x", function(d,i) {
                         return xc - (r+textPadding)*Math.sin(i*2*Math.PI/level); 
                     })
@@ -69,7 +72,8 @@
                     })
                     .attr("font-size", 20)
                     .attr("class", "label")
-                    // .style("color", "blue")
+                    // .style("fill", d3.scaleOrdinal(d3.interpolateViridis).domain([0,level]))
+                    .style("fill", lineScale)
                     .attr("font-family", "Courier")
                     
                     // var test = [];
@@ -127,10 +131,10 @@
             );
         </script>
     </body>
-    <style>
+    <!-- <style>
         .label {
             font-size: 20px;
-            color: #F8F8F8;
+            fill: #F8F8F8;
         }
-    </style>
+    </style> -->
 </html>
