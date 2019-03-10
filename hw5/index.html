@@ -1,0 +1,177 @@
+<head>
+    <meta charset="UTF-8">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/topojson.v2.min.js"></script>
+    <style>
+        .country {
+            fill: lightgrey;
+            stroke: none;
+        }
+        .outline {
+            stroke: black;
+            stroke-width: 1px;
+            fill: none;
+        }
+        .graticule {
+            fill: none;
+            stroke: lightgrey;
+        }
+
+        /* problem 2 */
+        .nyd {
+            stroke-width: 1px;
+            stroke: white;
+        }
+    </style>
+</head>
+<body>
+    <p id="p1">
+        <h3>Problem 1</h3>
+        <p>
+            <ul>
+                <li>
+                    In this mercator the countries on the same latitudes and 
+                    longtitudes are easy to detect.
+                </li>
+                <li>
+                    The areas of each countries are disproportionate. The Africa
+                    should be much bigger. 
+                </li>
+                <li>
+                    The mercator could be use to calculate the direct path from 
+                    one country to another.
+                </li>
+            </ul>
+        </p>
+        <svg id="mercator" height="400" width="600"></svg>
+        <p>
+            <ul>
+                <li>
+
+                </li>
+            </ul>
+        </p>
+        <svg id="equalEarth" width="600" height="400"></svg>
+        <svg id="conicEqualArea" width="600" height="400"></svg>
+        <script>
+            const svg = d3.select("svg#mercator");
+            const width = svg.attr("width");
+            const height = svg.attr("height");
+            const margin = {top: 0, right: 0, bottom: 0, left: 0};
+            const mapWidth = width - margin.left - margin.right;
+            const mapHeight = height - margin.top - margin.bottom;
+            const map = svg.append("g");
+
+            const svg2 = d3.select("svg#equalEarth");
+            const map2 = svg2.append("g");
+
+            const svg3 = d3.select("svg#conicEqualArea");
+            const map3 = svg3.append("g");
+            const requestData = async() => {
+                const world = await d3.json("./world_110m.json");
+                console.log(world);
+                var countries = topojson.feature(world, world.objects.countries);
+                // console.log(countries);
+                
+                var countriesMesh = topojson.mesh(world, world.objects.countries);
+                var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], countries);
+                var path = d3.geoPath().projection(projection);
+                // console.log(d3.geoGraticule10());
+                // console.log(projection);
+                
+                // console.log(path);
+                
+                map.append("path")
+                    .attr("class", "graticule")
+                    .attr("d", path(d3.geoGraticule10()))
+                map.selectAll("path")
+                    .data(countries.features)
+                    .enter()
+                    .append("path")
+                    .attr("class", "country")
+                    .attr("d", path);
+                map.append("path")
+                    .datum(countriesMesh)
+                    .attr("class", "outline")
+                    .attr("d", path);
+
+                
+                var projection2 = d3.geoEqualEarth().fitSize([mapWidth, mapHeight], countries);
+                var path2 = d3.geoPath().projection(projection2);
+
+                map2.selectAll("path")
+                    .data(countries.features)
+                    .enter()
+                    .append("path")
+                    .attr("class", "country")
+                    .attr("d", path2);
+                map2.append("path")
+                    .datum(countriesMesh)
+                    .attr("class", "outline")
+                    .attr("d", path2);
+
+                var projection3 = d3.geoConicEqualArea().fitSize([mapWidth, mapHeight], countries);
+                var path3 = d3.geoPath().projection(projection3);
+
+                map3.selectAll("path")
+                    .data(countries.features)
+                    .enter()
+                    .append("path")
+                    .attr("class", "country")
+                    .attr("d", path3);
+                map3.append("path")
+                    .datum(countriesMesh)
+                    .attr("class", "outline")
+                    .attr("d", path3);
+                console.log(path3);
+                
+
+
+            
+                const nyd = await d3.json("./new_york_districts.json");
+                console.log(nyd);
+                var districts = topojson.feature(nyd, nyd.objects.districts);
+                var nydProjection = d3.geoMercator().fitSize([nydWidth, nydHeight], districts);
+                var nydPath = d3.geoPath().projection(nydProjection);
+                console.log(districts);
+                
+                const colorScale = d3.scaleLinear()
+                                    .domain([30, 50, 70])
+                                    .range(["#F00","#CCCCCC", "#00F"])
+                                    .clamp(true)
+                                    .interpolate(d3.interpolateHcl);
+                
+                map4.selectAll("path")
+                    .data(districts.features)
+                    .enter()
+                    .append("path")
+                    .attr("class", "nyd")
+                    .attr("d", nydPath)
+                
+                map4.selectAll(".nyd")
+                    .style("fill", d => colorScale(d.properties.percent_trump))
+                // console.log(d3.geoPath().projection(nydProjection([42.443333, -76.5])));
+                console.log(nydProjection([-76.5, 42.443333]));
+                var ithaca = nydProjection([-76.5, 42.443333]);
+                map4.append("circle")
+                    .attr("r", 10)
+                    .attr("cx", ithaca[0])
+                    .attr("cy", ithaca[1])
+                    .style("fill", "white")
+            };
+            requestData();
+        </script>
+
+    </p>
+    <p id="p2">
+        <h3>Problem 2</h3>
+        <svg id="election" width="800" height="700"></svg>
+
+        <script>
+            const svg4 = d3.select("svg#election");
+            const nydWidth = svg4.attr("width");
+            const nydHeight = svg4.attr("height");
+            const map4 = svg4.append("g");
+        </script>
+    </p>
+</body>

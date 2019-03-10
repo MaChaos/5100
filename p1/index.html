@@ -4,9 +4,133 @@
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
         <title>2018 Spotify Top 100</title>
         <script src="https://d3js.org/d3.v5.min.js"></script>
+        <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+        <style>
+            body {
+                background-color: #16191c;
+            }
+            #chart {
+                text-align: center;
+            }
+            .label {
+                text-transform: capitalize;
+            }
+            /* .area {
+                fill-opacity: 0.3;
+            } */
+            #title {
+                margin-top: 30px;
+                color: #F8F8F8;
+                font-weight: bold;
+                font-size: 40px;
+                font-family: Montserrat;
+                text-align: center;
+                /* margin-right: auto; */
+                /* border-bottom:  */
+            }
+            #ranking {
+                display: inline-block;
+                color:aliceblue;
+                font-family: Montserrat;
+            }
+            #list-title {
+                margin-top: 50px;
+                margin-bottom: -5px;
+                font-size: 20px;
+                text-align: left;
+                
+            }
+            #list {
+                /* padding-top: 200px; */
+                width: 294px;
+                display: inline-block;
+                height: 800px;
+                overflow-y: scroll;
+                list-style-type: none;
+                padding-left: 0;
+                /* color:aliceblue; */
+                font-family: Montserrat;
+                line-height: 30px;
+                /* background-color: rgba(100, 116, 128, 0.2); */
+                /* color: aliceblue; */
+            }
+            #list li {
+                background-color: rgba(100, 116, 128, 0.2);
+                /* background-color: rgba(30, 215, 96, 0.1); */
+                padding-top: 5px;
+                padding-left: 10px;
+                margin-bottom: 2px;
+            }
+            .polygon0 {
+                fill: red;
+                stroke: red;
+                /* opacity: 0.3; */
+            }
+            .polygon1 {
+                fill: orange;
+                stroke: orange;
+            }
+            .polygon2 {
+                fill: yellow;
+                stroke: yellow;
+            }
+            #list #song0 {
+                /* margin-top: 100px; */
+                border-left: 5px solid red !important;
+            }
+            #list #song1 {
+                /* margin-top: 100px; */
+                border-left: 5px solid orange !important;
+            }
+            #list #song2 {
+                /* margin-top: 100px; */
+                border-left: 5px solid yellow !important;
+            }
+            #polygon2 {
+                fill: black;
+            }
+            #ploygon3 {
+                fill: black;
+            }
+            .description {
+                color: #F8F8F8;
+                font-family: Montserrat;
+            }
+        </style>
     </head>
-    <body style="background-color: #2b2726">
-        <svg id="radar" width="800" height="800"></svg>
+    <body>
+        <div id="chart">
+            <div id="title"> Audio Features of Spotify: Top Tracks of 2018 </div>
+            <svg id="radar" width="800" height="800"></svg>
+            <div id="ranking">
+                <p id="list-title"> Top 100 Tracks</p>
+                <ul id="list"></ul>
+            </div>
+            <!-- <ul id="list"></ul> -->
+        </div>
+        <!-- <div class="description">
+            <ul>
+                <li>
+                    Valence: “A measure from 0.0 to 1.0 describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy), while tracks with low valence sound more negative (e.g. sad, angry).”
+                </li>
+                <li>
+                        Danceability: “Danceability describes how suitable a track is for dancing based on a combination of musical elements (e.g. tempo, rhythm stability, beat strength, overall regularity). A value of 0.0 is least danceable and 1.0 is most danceable.”
+                </li>
+                <li>
+                        Speechiness: “Speechiness detects the presence of spoken words in a track. Values above 0.66 describe tracks that are probably made entirely of spoken words. Values 0.33 to 0.66 describe tracks that may contain both music and speech (e.g. rap music). Values below 0.33 most likely represent music.”
+                </li>
+                <li>
+                        Liveness: “Detects the presence of an audience in the recording. Higher liveness values represent an increased probability that the track was performed live. A value above 0.8 provides strong likelihood that the track is live.”
+                </li>
+                <li>
+                        Acousticness: “A confidence measure from 0.0 to 1.0 of whether the track is acoustic. 1.0 represents high confidence the track is acoustic.”
+                </li>
+                <li>
+                        Energy: “Energy is a measure from 0.0 to 1.0 and represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. Perceptual features contributing to this attribute include dynamic range, perceived loudness, timbre, onset rate, and general entropy.”
+                </li>
+            </ul>
+        </div> -->
+        
         <script>
             var svg = d3.select("svg#radar");
             d3.csv("./top2018.csv").then( function(data) {
@@ -15,9 +139,9 @@
                 const xc = width/2;
                 const yc = height/2;
                 const r = 300;
-                const textPadding = 30;
+                const textPadding = 50;
                 // const lineScale = d3.scaleOrdinal(d3.schemeCategory10).domain([0, category.length]);
-                const axisWidth = 2;
+                const axisWidth = 1;
                 const lineColor = "#3c415e";
                 const lableColor = "#3c415e";
 
@@ -57,7 +181,56 @@
                     .attr("class", "line")
                     .style("stroke", lineColor)
                     .style("stroke-width", axisWidth)
+                    // .style("fill", "white")
                     // .attr("opacity", 0.5)
+                for (var a = 1; a < 5; a++) {
+                    axis.append("line")
+                    .attr("x1", function(d,i) {
+                        return xc - r*a/5*Math.sin(i*2*Math.PI/level);
+                    })
+                    .attr("y1", function(d,i) {
+                        return yc - r*a/5*Math.cos(i*2*Math.PI/level);
+                    })
+                    .attr("x2", function(d,i) {
+                        return xc - r*a/5*Math.sin((i+1)*2*Math.PI/level);
+                    })
+                    .attr("y2", function(d,i) {
+                        return yc - r*a/5*Math.cos((i+1)*2*Math.PI/level);
+                    })
+                    .style("stroke", lineColor)
+                    .style("stroke-width", 1)
+                }
+                // axis.append("line")
+                //     .attr("x1", function(d,i) {
+                //         return xc - r*Math.sin(i*2*Math.PI/level);
+                //     })
+                //     .attr("y1", function(d,i) {
+                //         return yc - r*Math.cos(i*2*Math.PI/level);
+                //     })
+                //     .attr("x2", function(d,i) {
+                //         return xc - r*Math.sin((i+1)*2*Math.PI/level);
+                //     })
+                //     .attr("y2", function(d,i) {
+                //         return yc - r*Math.cos((i+1)*2*Math.PI/level);
+                //     })
+                //     .style("stroke", lineColor)
+                //     .style("stroke-width", 0)
+                    // .style("fill", "white")
+                
+                var area = d3.area()
+                    .x(function(d,i) {
+                        return xc - r*Math.sin(i*2*Math.PI/level);
+                    })
+                    .y0(yc)
+                    .y1(function(d,i) {
+                        return yc - r*Math.cos(i*2*Math.PI/level);
+                    })
+                axis.append("path")
+                    .attr("d", area)
+                    // .attr("class", "area")
+                    .style("fill", "rgba(100, 116, 128, 0.05    )")
+                    
+                
                 axis.append("g")
                     .append("text")
                     .attr("x", function(d,i) {
@@ -73,9 +246,9 @@
                     .attr("font-size", 20)
                     .attr("class", "label")
                     // .style("fill", d3.scaleOrdinal(d3.interpolateViridis).domain([0,level]))
-                    .style("fill", lineScale)
-                    .attr("font-family", "Courier")
-                    
+                    .style("fill", "#F8F8F8")
+                    .attr("font-family", "Montserrat")
+                
                     // var test = [];
                     // var inner = [];
                     // inner.push({
@@ -92,6 +265,7 @@
                     var points = []
                     for (var j = 0; j < category.length; j++) {
                         points.push( {
+                            "id": i,
                             "x": xc - d[category[j]]*Math.sin(j*2*Math.PI/level)*r,
                             "y": yc - d[category[j]]*Math.cos(j*2*Math.PI/level)*r
                         })
@@ -106,23 +280,52 @@
                     
                 });
                 console.log(allPoints);
-                const radarScale = d3.scaleSequential(d3.interpolateViridis).domain([100,0]);
-                for(var k = 0; k < allPoints.length; k++) {
-                    
+                const radarScale = d3.scaleSequential(d3.interpolateViridis).domain([0,100]);
+                // for(var k = 0; k < allPoints.length; k++) {
+                for(var k = allPoints.length-1; k >= 0; k--) {
+                    // console.log("hi" + k);
+                        
                     svg.selectAll(".area")
                         .data(allPoints[k])
                         .enter()
                         .append("polygon")
                         .attr("points",function(d) { 
-                            return allPoints[k].map(function(d) { 
+                            return allPoints[k].map(function(d) {
+                                // console.log(d); 
                                 return [d.x,d.y].join(","); 
                                 }).join(" ");
                         })
+                        .attr("class", "polygon"+k)
                         .attr("stroke", radarScale(k))
                         .attr("fill", radarScale(k))
-                        .style("opacity", "0.05")
+                        .style("opacity", "0.09")
                 }
-                console.log(radarScale(500));
+                data.forEach( (d,i) => {
+                    d3.select("#list")
+                        .append("li")
+                        .attr("id", "song" + i)
+                        .text(d.name)
+                        .style("border-left", "5px solid " +  radarScale(i))
+                        // .style("text-decoration", "underline" + radarScale(i) + "5px")
+                        // .style("text-decoration", radarScale(i))
+                        .on("mouseover", function() {
+                            // svg.select("#polygon"+i).style = "opacity: 0.1;"
+                            console.log(svg.select(".polygon"+i));
+                            
+                            // svg.select(".polygon"+i).style("opacity", 1);
+                            svg.selectAll("polygon").each(function() {
+                                let polygon = d3.select(this);
+                                // console.log(polygon.id);
+                                // console.log(this[0]);
+                        
+                                polygon.attr("opacity", 1);
+                                
+                                
+                                
+                            })
+                        })
+                });
+                // console.log(radarScale(500));
 
             }).catch( e => { console.log("Error detected:" + e.message);});
             var f = d3.format("0.2s");
