@@ -28,6 +28,7 @@
     <p id="p1">
         <h3>Problem 1</h3>
         <p>
+            <h4>Mercator</h4>
             <ul>
                 <li>
                     In this mercator the countries on the same latitudes and 
@@ -35,23 +36,51 @@
                 </li>
                 <li>
                     The areas of each countries are disproportionate. The Africa
-                    should be much bigger. 
+                    should look much bigger. 
                 </li>
                 <li>
                     The mercator could be use to calculate the direct path from 
-                    one country to another.
+                    one country to another. Thus it is good for nautical navigation.
                 </li>
             </ul>
         </p>
         <svg id="mercator" height="400" width="600"></svg>
         <p>
+            <h4>Equal Earth</h4>
             <ul>
                 <li>
-
+                    Good: Best representation of the areas of each continents, where 
+                    the area sizes are almost accurate especially along the equator.
+                </li>
+                <li>
+                    Bad: The actual route between two points is actually distorted, so 
+                    cannot be used for comparing and calculating the real route distance.
+                </li>
+                <li>
+                    Example: Most world maps use equal earth projection, which are now 
+                    displayed in classrooms.
                 </li>
             </ul>
         </p>
         <svg id="equalEarth" width="600" height="400"></svg>
+        <p>
+            <h4>Conic</h4>
+                <ul>
+                    <li>
+                        Good: Because distortion is constant along the parallels, it is good 
+                        for mapping continents like North America. There is no range limitation to map 
+                        the contient from west to east because the map 
+                        is locally true along the standard parallels.
+                    </li>
+                    <li>
+                        Bad: Not very intuitive to present large areas like global continents.
+                    </li>
+                    <li>
+                        Example: Use to map the reginal or national temperature zone(such as US), where the 
+                        distortion around the middle latitudes is minimal.
+                    </li>
+                </ul>
+            </p>
         <svg id="conicEqualArea" width="600" height="400"></svg>
         <script>
             const svg = d3.select("svg#mercator");
@@ -137,7 +166,7 @@
                 
                 const colorScale = d3.scaleLinear()
                                     .domain([30, 50, 70])
-                                    .range(["#F00","#CCCCCC", "#00F"])
+                                    .range(["#FF0000","#CCCCCC", "#0000FF"])
                                     .clamp(true)
                                     .interpolate(d3.interpolateHcl);
                 

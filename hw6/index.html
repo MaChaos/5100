@@ -1,0 +1,196 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+    </head>
+    <body>
+        <p id="p1">
+            <svg id="colorHue" height="500" width="500"></svg>
+            <div id="slider"></div>
+            <script>
+                // creatw array with saturation and lightness from 0 to 100
+                let svg = d3.select("#colorHue").append("g");
+                var array = [];
+                for (var i = 0; i <= 100; i = i+10) {
+                    for (var j = 0; j <= 100; j = j+10) {
+                        array.push({"saturation": i, "lightness": j});
+                    }
+                }
+                // create a scale
+                let xScale = d3.scaleLinear().domain([0,100]).range([20,420]);
+                let yScale = d3.scaleLinear().domain([0,100]).range([420,20]);
+                
+                function showCircles(hue) {
+                    svg.selectAll("circle")
+                        .data(array)
+                        .enter()
+                        .append("circle")
+                        .attr("cx", function (d,i) {
+                            // console.log("hi");
+                            
+                            // console.log(d);
+                            
+                            return xScale(d.lightness);
+                            
+                        } )
+                        .attr("cy", function(d,i){
+                            // console.log(d);
+                            return yScale(d.saturation);
+                        })
+                        .attr("r", 20)
+                        .attr("stroke-width", 1)
+                        .attr("stroke", "grey")
+                        .style("fill", function(d) {
+                            // console.log(d3.hsl(hue, d.saturation, d.lightness));
+                            // console.log("show");
+                            return d3.hsl(hue, d.saturation/100, d.lightness/100);
+                        })
+                        // .exit()
+                        
+                        // .style("fill", d3.hsl(20,0.3,0.5))
+                }
+                var sliderDiv = d3.select("#slider");
+                var h = 0;
+                showCircles(0)
+                sliderDiv.append("input")
+                        .attr("type", "range")
+                        .attr("class", "slider")
+                        .style("width", 360)
+                        .attr("min", 0)
+                        .attr("max", 360).attr("step", 1)
+                        .attr("value", 0)
+                        .on("input", function() {
+                            // console.log(this.value);
+                            
+                            svg.selectAll("circle").remove();
+                            showCircles(Number(this.value));
+                        })
+                // showCircles(0);
+            </script>
+        </p>
+        <p>Problem 2:</p>
+
+        <svg id="container" width="800" height="437">
+            <foreignObject width="800" height="437" y="0" x="0">
+           <!--- Foreign object allows us to nest HTML inside an SVG --->
+           <!--- It can get pretty hacky, so use at your own risk --->
+            <canvas id="painting" width="800" height="437"></canvas>
+            </foreignObject>
+            <g id="brush"></g>
+        </svg>
+        <br/>
+        <svg width="800" height="100">
+          <rect id="color" x="0" y="0" width="800" height="100" fill="white" />
+          <text id="label" x="20" y="80" />
+        </svg>
+        
+        <script>
+        
+        // Some helper variables for you to use -- do not modify or helper functions will fail
+        var canvas = d3.select("#painting");
+        var gfxContext = canvas.node().getContext("2d");
+        var imgWidth = canvas.node().width;
+        var imgHeight = canvas.node().height;
+        
+        var img = new Image;
+        img.src = "nighthawks.png"
+        img.onload = imgLoaded;
+        
+        function imgLoaded() {
+            gfxContext.drawImage(this, 0, 0); // Paint image to canvas
+        
+          // pixels is a 2-d array containing RGB data for the whole image
+          //  for example:  pixels[155][22] will tell give you a dict for the RGB values at point x=22, y=155
+          //              (note that y position comes first, then x position)
+          //              R, G, and B values start at 0 and run to 255
+            let pixels = getAllPixels();
+        
+          // ----- All of your code for this problem must go between these comments -----
+          // Make use of the g#brush group inside of the SVG element for placing your brush
+          // Make use of the #color and #label elements for your average color and text label
+            var brush = d3.brush()
+                            .extent(
+                                [[0,0], [800, 437]]
+                            )
+                            .on("brush end", brushed);
+            d3.select("#brush").call(brush);
+            console.log(d3.lab(d3.rgb(255,0,0)).l);
+            
+            function brushed(){
+                if (d3.event.selection != null) {
+                    // console.log(d3.event.selection);
+                    let startX = Math.round(d3.event.selection[0][0]);
+                    let startY = Math.round(d3.event.selection[0][1]);
+                    let endX = Math.round(d3.event.selection[1][0]);
+                    let endY = Math.round(d3.event.selection[1][1]);
+                    // let end = d3.event.selection[1];
+                    // console.log(pixels);
+                    var l = 0;
+                    var a = 0;
+                    var b = 0;
+                    var total = 0;
+                    // console.log(d3.rgb(255,0,0));
+                    
+                    
+                    for (var i = startX; i < endX; i++) {
+                        for (var j = startY; j < endY; j++) {
+                            var rgb = d3.rgb(pixels[j][i].r,pixels[j][i].g, pixels[j][i].b);
+                            // console.log(rgb);
+                            
+                            var lab = d3.lab(rgb);
+                            l = l + lab.l;
+                            a = a + lab.a;
+                            b = b + lab.b;
+                            total++;
+                        }
+                    }
+                    var averageColor = d3.lab(l/total, a/total, b/total);
+                    d3.select("#color")
+                        .attr("fill", averageColor);
+                    d3.select("#label")
+                        .text(averageColor.hex())
+                        .attr("fill", function(){
+                            if (l/total >  50)
+                                return "black";
+                            else
+                                return "white";
+                        })
+                }
+            }
+        // loop all the pixels in the brush
+        // round to integer
+        // convert rgb to lab
+        // calculate total and then average the lab
+        // create var averageColor
+        // assign color to the #color
+        
+        
+        
+          // ----- All of your code for this problem must go between these comments -----
+        
+        }
+        
+        function getAllPixels() {
+        
+          let gfxData = gfxContext.getImageData(0,0,imgWidth,imgHeight).data;
+          let processedData = [];
+          for (let i=0; i<gfxData.length; i=i+4) { // contains stripe of RGBARGBARGBA
+            let xCoord = Math.floor(i/4) % imgWidth;
+            let yCoord = Math.floor(i/(imgWidth*4))
+            if (xCoord === 0) { processedData.push( [] ); }
+            processedData[processedData.length-1].push( {
+              x: xCoord,
+              y: yCoord,
+              r: gfxData[i],
+              g: gfxData[i+1],
+              b: gfxData[i+2]
+            } );
+          }
+          return processedData;
+        
+        }
+        
+        
+        </script>
+    </body>
+</html>
